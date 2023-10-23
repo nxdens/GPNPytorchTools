@@ -13,6 +13,14 @@ gpnpytorchtools created by Linghai Wang with contributions from Jinghang Li
 pip install gpnpytorchtools
 ```
 
+## Development
+
+Make sure to install the library locally for relative imports to work properly. You should give the path to the folder containing the setup.py file
+
+```bash
+pip install -e path/to/gpnpytorchtools
+```
+
 ## Usage
 
 ```py
