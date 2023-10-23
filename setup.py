@@ -32,15 +32,12 @@ def read_requirements(path):
 setup(
     name="gpnpytorchtools",
     version=read("gpnpytorchtools", "VERSION"),
-    description="Awesome gpnpytorchtools created by nxdens",
+    description="A collection of pytorch tools created by GPN members",
     url="https://github.com/nxdens/GPNPytorchTools/",
     long_description=read("README.md"),
     long_description_content_type="text/markdown",
-    author="nxdens",
+    author="Linghai Wang",
     packages=find_packages(exclude=["tests", ".github"]),
     install_requires=read_requirements("requirements.txt"),
-    entry_points={
-        "console_scripts": ["gpnpytorchtools = gpnpytorchtools.__main__:main"]
-    },
     extras_require={"test": read_requirements("requirements-test.txt")},
 )

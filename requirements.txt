@@ -3,3 +3,10 @@
 # Add the requirements you need to this file.
 # or run `make init` to create this file automatically based on the template.
 # You can also run `make switch-to-poetry` to use the poetry package manager.
+torch>=2.0.1
+pytest>=7.1.0
+numpy>=1.24.1
+lightning>=2.0.1
+pandas
+scikit-learn
+linearinit
