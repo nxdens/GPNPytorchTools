@@ -133,3 +133,4 @@ dmypy.json
 
 # ignore environments
 *env*
+.vscode/settings.json

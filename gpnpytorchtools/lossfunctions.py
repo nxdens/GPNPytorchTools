@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 
+
 class VAELoss(nn.Module):
     """Loss function for vae."""
 
@@ -23,6 +24,7 @@ class VAELoss(nn.Module):
         reconstruction_loss = self.reconstruction_loss(x_hat, x)
         kl_divergence = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
         return reconstruction_loss + kl_divergence, reconstruction_loss, kl_divergence
+
 
 class SSVAERLoss(nn.Module):
     """Loss function for SSVAER."""
