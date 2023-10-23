@@ -177,8 +177,12 @@ class PandasDatamodule(pl.LightningDataModule):
                 cat_cols.append(self.label_cols)
 
         if cat_cols:
-            cat_encoded = self.col_encoder.fit_transform(self.dataframe[cat_cols])
-            self.dataframe[cat_cols] = pd.DataFrame(cat_encoded, columns=cat_cols)
+            cat_encoded = self.col_encoder.fit_transform(
+                self.dataframe[cat_cols]
+            )
+            self.dataframe[cat_cols] = pd.DataFrame(
+                cat_encoded, columns=cat_cols
+            )
 
         return cat_cols, self.input_cols, self.label_cols
 

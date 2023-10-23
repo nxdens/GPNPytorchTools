@@ -7,7 +7,11 @@ from . import utils
 
 class VAE(nn.Module):
     def __init__(
-        self, input_size: int, layers: int, latent_dim: int, activation=nn.GELU()
+        self,
+        input_size: int,
+        layers: int,
+        latent_dim: int,
+        activation=nn.GELU(),
     ):
         super().__init__()
 
@@ -70,7 +74,9 @@ class SSVAER(nn.Module):
         self.regressor_layer_sizes = utils.generate_layer_sizes(
             resample_size, 1, regressor_layers, how="linspace"
         )
-        self.latent_gen_layer_sizes = utils.generate_layer_sizes(2, latent_size, 2)
+        self.latent_gen_layer_sizes = utils.generate_layer_sizes(
+            2, latent_size, 2
+        )
 
         print("shared layers sizes: ", self.shared_layer_sizes)
         print("resample layers sizes: ", self.resample_layer_sizes)
@@ -87,7 +93,9 @@ class SSVAER(nn.Module):
 
         self.trend_regressor = FullyConnectedLayers(self.regressor_layer_sizes)
 
-        self.latent_generator = FullyConnectedLayers(self.latent_gen_layer_sizes)
+        self.latent_generator = FullyConnectedLayers(
+            self.latent_gen_layer_sizes
+        )
 
         self.decoder = FullyConnectedLayers(
             self.resample_layer_sizes[::-1] + self.shared_layer_sizes[::-1]
