@@ -31,11 +31,12 @@ class VAELoss(nn.Module):
 
 
 class SSVAERLoss(nn.Module):
-    """Loss function for SSVAER."""
+    """Loss function for SSVAER. Can also be used for VAER"""
 
-    def __init__(self):
+    def __init__(self, reduction="mean"):
         super().__init__()
         self.reconstruction_loss = nn.MSELoss(reduction="mean")
+        self.reduction = reduction
 
     #
     def forward(
@@ -63,12 +64,20 @@ class SSVAERLoss(nn.Module):
         """
         reconstruction_loss = self.reconstruction_loss(x_hat, x)
         reconstruction_loss += self.reconstruction_loss(x_gen_hat, x)
-        kld_loss = torch.mean(
-            -0.5
-            * (1 + z_logvar - (z_mu - z_gen).pow(2) - z_logvar.exp()).sum(
-                dim=1
+        if self.reduction == "mean":
+            kld_loss = torch.mean(
+                -0.5
+                * (1 + z_logvar - (z_mu - z_gen).pow(2) - z_logvar.exp()).sum(
+                    dim=1
+                )
             )
-        )
+        else:
+            kld_loss = torch.sum(
+                -0.5
+                * (1 + z_logvar - (z_mu - z_gen).pow(2) - z_logvar.exp()).sum(
+                    dim=1
+                )
+            )
         label_loss = torch.mean(
             -0.5
             + 0.5 * torch.div((y_mu - y).pow(2), y_logvar.exp())

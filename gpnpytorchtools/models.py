@@ -5,6 +5,64 @@ import numpy as np
 from . import utils
 
 
+class VAER(nn.Module):
+    def __init__(
+        self,
+        input_size: int,
+        intermediate_size: int = 64,
+        latent_dim: int = 8,
+        activation=nn.TanH(),
+    ):
+        super().__init__()
+        self.input_size = input_size
+        self.intermediate_size = intermediate_size
+        self.latent_dim = latent_dim
+        self.activation = activation
+        self.layers = [
+            input_size,
+            intermediate_size * 2,
+            intermediate_size,
+            latent_dim,
+        ]
+        self.encoder = FullyConnectedLayers(self.layers, activation=activation)
+        self.decoder = FullyConnectedLayers(
+            self.layers[::-1], activation=activation
+        )
+
+        self.r_mu = FullyConnectedLayers(
+            [latent_dim, 1], activation=nn.Identity()
+        )
+        self.r_logvar = FullyConnectedLayers(
+            [latent_dim, 1], activation=nn.Identity()
+        )
+
+        self.z_mu = FullyConnectedLayers(
+            [latent_dim, latent_dim], activation=nn.Identity()
+        )
+        self.z_logvar = FullyConnectedLayers(
+            [latent_dim, latent_dim], activation=nn.Identity()
+        )
+
+    def forward(self, x):
+        x = self.encoder(x)
+        r_mu = self.r_mu(x)
+        r_logvar = self.r_logvar(x)
+        z_mu = self.z_mu(x)
+        z_logvar = self.z_logvar(x)
+        r = utils.reparameterization(r_mu, r_logvar)
+        z = utils.reparameterization(z_mu, z_logvar)
+        x_hat = self.decoder(z)
+        return (
+            x_hat,
+            z_mu,
+            z_logvar,
+            z,
+            r_mu,
+            r_logvar,
+            r,
+        )
+
+
 class VAE(nn.Module):
     def __init__(
         self,

@@ -40,7 +40,9 @@ def generate_layer_sizes(input_size, output_size, layers, how="geomspace"):
             input_size, output_size, layers, endpoint=True
         ).astype(int)
     else:
-        raise ValueError("how must be one of 'logspace', 'linspace', 'geomspace'")
+        raise ValueError(
+            "how must be one of 'logspace', 'linspace', 'geomspace'"
+        )
 
     return list(layer_sizes)
 
