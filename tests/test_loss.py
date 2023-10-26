@@ -12,7 +12,8 @@ def test_vaeloss():
 
 
 def test_ssvaerloss():
-    ss_vae_loss = lossfunctions.SSVAERLoss()
+    ss_vae_loss = lossfunctions.SSVAERLoss(reduction="mean")
+    ss_vae_loss2 = lossfunctions.SSVAERLoss(reduction="sum")
     x = torch.randn(10, 10)
     x_hat = torch.randn(10, 10)
     z_mu = torch.randn(10, 6)
@@ -23,3 +24,4 @@ def test_ssvaerloss():
     y = torch.randn(10, 5)
     x_gen_hat = torch.randn(10, 10)
     ss_vae_loss(x, x_hat, z_mu, z_logvar, z_gen, y_mu, y_logvar, y, x_gen_hat)
+    ss_vae_loss2(x, x_hat, z_mu, z_logvar, z_gen, y_mu, y_logvar, y, x_gen_hat)
