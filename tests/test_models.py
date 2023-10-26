@@ -5,7 +5,7 @@ from gpnpytorchtools import models
 def test_vaer():
     x = torch.randn(10, 10)
     vaer = models.VAER(input_size=10)
-    x_hat, z_mu, z_logvar, z, r_mu, r_logvar = vaer(x)
+    x_hat, z_mu, z_logvar, z, r_mu, r_logvar, r = vaer(x)
     torch.nn.MSELoss()(x_hat, x).backward()
     assert x_hat.shape == x.shape
     assert z_mu.shape == (10, 8)
@@ -13,6 +13,7 @@ def test_vaer():
     assert z.shape == (10, 8)
     assert r_mu.shape == (10, 1)
     assert r_logvar.shape == (10, 1)
+    assert r.shape == (10, 1)
 
 
 def test_vae():
