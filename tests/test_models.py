@@ -2,13 +2,30 @@ import torch
 from gpnpytorchtools import models
 
 
+def test_vaer():
+    x = torch.randn(10, 10)
+    vaer = models.VAER(input_size=10)
+    x_hat, z_mu, z_logvar, z, r_mu, r_logvar = vaer(x)
+    torch.nn.MSELoss()(x_hat, x).backward()
+    assert x_hat.shape == x.shape
+    assert z_mu.shape == (10, 8)
+    assert z_logvar.shape == (10, 8)
+    assert z.shape == (10, 8)
+    assert r_mu.shape == (10, 1)
+    assert r_logvar.shape == (10, 1)
+
+
 def test_vae():
     x = torch.randn(10, 10)
     latent_size = 5
     vae = models.VAE(
-        input_size=10, layers=2, latent_dim=latent_size, activation=torch.nn.GELU()
+        input_size=10,
+        layers=2,
+        latent_dim=latent_size,
+        activation=torch.nn.GELU(),
     )
     x_hat, mu, logvar, z_resample = vae(x)
+    torch.nn.MSELoss()(x_hat, x).backward()
     assert x_hat.shape == x.shape
     assert mu.shape == (10, latent_size)
     assert logvar.shape == (10, latent_size)

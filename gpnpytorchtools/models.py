@@ -11,7 +11,7 @@ class VAER(nn.Module):
         input_size: int,
         intermediate_size: int = 64,
         latent_dim: int = 8,
-        activation=nn.TanH(),
+        activation=nn.Tanh(),
     ):
         super().__init__()
         self.input_size = input_size
