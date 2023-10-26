@@ -24,23 +24,57 @@ class VAER(nn.Module):
             intermediate_size,
             latent_dim,
         ]
-        self.encoder = FullyConnectedLayers(self.layers, activation=activation)
+        dropout_layer = FullyConnectedLayers(
+            [input_size, intermediate_size * 2],
+            activation=activation,
+            dropout_p=0.25,
+            bias=True,
+            batchnorm=False,
+        )
+        not_dropout_layer = FullyConnectedLayers(
+            self.layers[1:],
+            activation=activation,
+            dropout_p=0.0,
+            bias=True,
+            batchnorm=False,
+        )
+        self.encoder = nn.Sequential(dropout_layer, not_dropout_layer)
         self.decoder = FullyConnectedLayers(
-            self.layers[::-1], activation=activation
+            self.layers[::-1],
+            activation=activation,
+            dropout_p=0.0,
+            bias=True,
+            batchnorm=False,
         )
 
         self.r_mu = FullyConnectedLayers(
-            [latent_dim, 1], activation=nn.Identity()
+            [latent_dim, 1],
+            activation=nn.Identity(),
+            dropout_p=0.0,
+            bias=True,
+            batchnorm=False,
         )
         self.r_logvar = FullyConnectedLayers(
-            [latent_dim, 1], activation=nn.Identity()
+            [latent_dim, 1],
+            activation=nn.Identity(),
+            dropout_p=0.0,
+            bias=True,
+            batchnorm=False,
         )
 
         self.z_mu = FullyConnectedLayers(
-            [latent_dim, latent_dim], activation=nn.Identity()
+            [latent_dim, latent_dim],
+            activation=nn.Identity(),
+            dropout_p=0.0,
+            bias=True,
+            batchnorm=False,
         )
         self.z_logvar = FullyConnectedLayers(
-            [latent_dim, latent_dim], activation=nn.Identity()
+            [latent_dim, latent_dim],
+            activation=nn.Identity(),
+            dropout_p=0.0,
+            bias=True,
+            batchnorm=False,
         )
 
     def forward(self, x):
@@ -70,11 +104,19 @@ class VAE(nn.Module):
         layers: int,
         latent_dim: int,
         activation=nn.GELU(),
+        dropout_p: float = 0.0,
+        batchnorm: bool = False,
+        bias: bool = False,
     ):
         super().__init__()
 
         self.latent_dim = latent_dim
         self.input_size = input_size
+        self.activation = activation
+        self.dropout_p = dropout_p
+        self.batchnorm = batchnorm
+        self.bias = bias
+
         latent_power = np.floor(np.log2(latent_dim))
         input_power = np.ceil(np.log2(input_size))
 
@@ -86,10 +128,22 @@ class VAE(nn.Module):
 
         print("layers sizes: ", self.layer_sizes)
 
-        self.encoder = FullyConnectedLayers(self.layer_sizes)
+        self.encoder = FullyConnectedLayers(
+            self.layer_sizes,
+            activation=self.activation,
+            dropout_p=self.dropout_p,
+            batchnorm=self.batchnorm,
+            bias=self.bias,
+        )
         self.mu = nn.Linear(self.latent_dim, self.latent_dim)
         self.logvar = nn.Linear(self.latent_dim, self.latent_dim)
-        self.decoder = FullyConnectedLayers(self.layer_sizes[::-1])
+        self.decoder = FullyConnectedLayers(
+            self.layer_sizes[::-1],
+            activation=self.activation,
+            dropout_p=self.dropout_p,
+            batchnorm=self.batchnorm,
+            bias=self.bias,
+        )
 
     def forward(self, x):
         """Perform a single forward pass through the network.
@@ -116,12 +170,19 @@ class SSVAER(nn.Module):
         regressor_layers: int,
         latent_size: int,
         activation=nn.GELU(),
+        dropout_p: float = 0.0,
+        batchnorm: bool = False,
+        bias: bool = False,
     ):
         super().__init__()
 
         self.latent_dim = latent_size
         self.input_size = input_size
         self.resample_size = resample_size
+        self.activation = activation
+        self.dropout_p = dropout_p
+        self.batchnorm = batchnorm
+        self.bias = bias
 
         self.shared_layer_sizes = utils.generate_layer_sizes(
             input_size, resample_size, shared_layers, how="logspace"
@@ -132,31 +193,73 @@ class SSVAER(nn.Module):
         self.regressor_layer_sizes = utils.generate_layer_sizes(
             resample_size, 1, regressor_layers, how="linspace"
         )
-        self.latent_gen_layer_sizes = utils.generate_layer_sizes(
-            2, latent_size, 2
-        )
+        self.latent_gen_layer_sizes = utils.generate_layer_sizes(2, latent_size, 2)
 
         print("shared layers sizes: ", self.shared_layer_sizes)
         print("resample layers sizes: ", self.resample_layer_sizes)
         print("regressor layers sizes: ", self.regressor_layer_sizes)
         print("latent generator layers sizes: ", self.latent_gen_layer_sizes)
 
-        self.encoder = FullyConnectedLayers(self.shared_layer_sizes)
+        self.encoder = FullyConnectedLayers(
+            self.shared_layer_sizes,
+            activation=self.activation,
+            dropout_p=self.dropout_p,
+            batchnorm=self.batchnorm,
+            bias=self.bias,
+        )
 
-        self.z_mu = FullyConnectedLayers(self.resample_layer_sizes)
-        self.z_logvar = FullyConnectedLayers(self.resample_layer_sizes)
+        self.z_mu = FullyConnectedLayers(
+            self.resample_layer_sizes,
+            activation=nn.Identity(),
+            dropout_p=self.dropout_p,
+            batchnorm=self.batchnorm,
+            bias=self.bias,
+        )
+        self.z_logvar = FullyConnectedLayers(
+            self.resample_layer_sizes,
+            activation=nn.Identity(),
+            dropout_p=self.dropout_p,
+            batchnorm=self.batchnorm,
+            bias=self.bias,
+        )
 
-        self.y_mu = FullyConnectedLayers(self.regressor_layer_sizes)
-        self.y_logvar = FullyConnectedLayers(self.regressor_layer_sizes)
+        self.y_mu = FullyConnectedLayers(
+            self.regressor_layer_sizes,
+            activation=nn.Identity(),
+            dropout_p=self.dropout_p,
+            batchnorm=self.batchnorm,
+            bias=self.bias,
+        )
+        self.y_logvar = FullyConnectedLayers(
+            self.regressor_layer_sizes,
+            activation=nn.Identity(),
+            dropout_p=self.dropout_p,
+            batchnorm=self.batchnorm,
+            bias=self.bias,
+        )
 
-        self.trend_regressor = FullyConnectedLayers(self.regressor_layer_sizes)
+        self.trend_regressor = FullyConnectedLayers(
+            self.regressor_layer_sizes,
+            activation=self.activation,
+            dropout_p=self.dropout_p,
+            batchnorm=self.batchnorm,
+            bias=self.bias,
+        )
 
         self.latent_generator = FullyConnectedLayers(
-            self.latent_gen_layer_sizes
+            self.latent_gen_layer_sizes,
+            activation=self.activation,
+            dropout_p=self.dropout_p,
+            batchnorm=self.batchnorm,
+            bias=self.bias,
         )
 
         self.decoder = FullyConnectedLayers(
-            self.resample_layer_sizes[::-1] + self.shared_layer_sizes[::-1]
+            self.resample_layer_sizes[::-1] + self.shared_layer_sizes[::-1],
+            activation=self.activation,
+            dropout_p=self.dropout_p,
+            batchnorm=self.batchnorm,
+            bias=self.bias,
         )
 
     def forward(self, x):
